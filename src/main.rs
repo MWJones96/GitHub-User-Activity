@@ -6,9 +6,46 @@ fn build_url(username: &str) -> String {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct Payload {}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Repo {
+    name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Actor {
+    login: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+enum EventType {
+    CommitCommentEvent,
+    CreateEvent,
+    DeleteEvent,
+    ForkEvent,
+    GollumEvent,
+    IssueCommentEvent,
+    IssuesEvent,
+    MemberEvent,
+    PublicEvent,
+    PullRequestEvent,
+    PullRequestReviewEvent,
+    PullRequestReviewCommentEvent,
+    PullRequestReviewThreadEvent,
+    PushEvent,
+    ReleaseEvent,
+    SponsorshipEvent,
+    WatchEvent,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct Event {
     #[serde(rename = "type")]
-    _type: Option<String>,
+    _type: Option<EventType>,
+    actor: Actor,
+    repo: Repo,
+    payload: Payload,
 }
 
 fn main() {
