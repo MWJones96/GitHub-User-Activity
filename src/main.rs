@@ -1,43 +1,11 @@
 use reqwest::blocking::Client;
-use serde::{Deserialize, Serialize};
+
+use crate::event::{Event, EventType};
+
+mod event;
 
 fn build_url(username: &str) -> String {
     format!("https://api.github.com/users/{username}/events")
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-enum EventType {
-    CommitCommentEvent,
-    CreateEvent,
-    DeleteEvent,
-    ForkEvent,
-    GollumEvent,
-    IssueCommentEvent,
-    IssuesEvent,
-    MemberEvent,
-    PublicEvent,
-    PullRequestEvent,
-    PullRequestReviewEvent,
-    PullRequestReviewCommentEvent,
-    PullRequestReviewThreadEvent,
-    PushEvent,
-    ReleaseEvent,
-    SponsorshipEvent,
-    WatchEvent,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Repo {
-    name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Event {
-    #[serde(rename = "type")]
-    _type: Option<EventType>,
-    repo: Repo,
-    payload: serde_json::Value,
-    created_at: String,
 }
 
 fn main() {
@@ -55,17 +23,21 @@ fn main() {
                 println!("Output:");
             }
             for event in events {
-                let repo_name = event.repo.name;
-                let timestamp = event.created_at;
-                let message: String = match event._type {
+                let repo_name = event.get_repo_name();
+                let timestamp = event.get_created_at();
+                let message: String = match event.get_event_type() {
                     Some(_type) => match _type {
                         EventType::CommitCommentEvent => "".to_owned(),
                         EventType::CreateEvent => {
-                            let ref_type = event.payload.get("ref_type").unwrap().as_str().unwrap();
+                            let ref_type = event
+                                .get_payload_data("ref_type")
+                                .unwrap()
+                                .as_str()
+                                .unwrap();
                             if ref_type.eq("repository") {
                                 format!("New repository created: {repo_name}")
                             } else {
-                                let _ref = event.payload.get("ref").unwrap().as_str().unwrap();
+                                let _ref = event.get_payload_data("ref").unwrap().as_str().unwrap();
                                 format!("New {ref_type} was created in {repo_name}: {_ref}")
                             }
                         }
@@ -74,7 +46,8 @@ fn main() {
                         EventType::GollumEvent => "".to_owned(),
                         EventType::IssueCommentEvent => "".to_owned(),
                         EventType::IssuesEvent => {
-                            let action = event.payload.get("action").unwrap().as_str().unwrap();
+                            let action =
+                                event.get_payload_data("action").unwrap().as_str().unwrap();
                             let action = action
                                 .chars()
                                 .next()
@@ -92,8 +65,7 @@ fn main() {
                         EventType::PullRequestReviewThreadEvent => "".to_owned(),
                         EventType::PushEvent => {
                             let commit_count = event
-                                .payload
-                                .get("distinct_size")
+                                .get_payload_data("distinct_size")
                                 .unwrap()
                                 .as_number()
                                 .unwrap();
