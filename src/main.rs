@@ -54,7 +54,11 @@ fn main() {
                 match event._type {
                     Some(_type) => match _type {
                         EventType::CommitCommentEvent => todo!(),
-                        EventType::CreateEvent => {}
+                        EventType::CreateEvent => {
+                            let ref_type = event.payload.get("ref_type").unwrap().as_str().unwrap();
+                            let repo_name = event.repo.name;
+                            println!("{}", format!("- New {ref_type} was created in {repo_name}"));
+                        }
                         EventType::DeleteEvent => todo!(),
                         EventType::ForkEvent => todo!(),
                         EventType::GollumEvent => todo!(),
