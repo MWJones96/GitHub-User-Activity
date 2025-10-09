@@ -1,3 +1,5 @@
+use std::env::{self, args};
+
 use reqwest::blocking::Client;
 
 use crate::event::{Event, EventType};
@@ -27,17 +29,18 @@ fn main() {
                 let timestamp = event.get_created_at();
                 let message: String = match event.get_event_type() {
                     Some(_type) => match _type {
-                        EventType::CommitCommentEvent => "".to_owned(),
+                        EventType::CommitCommentEvent => {
+                            let comment = event.get_payload_data("comment");
+                            let commit_id = comment.get("commit_id").unwrap().as_str().unwrap();
+                            let comment_body = comment.get("body").unwrap().as_str().unwrap();
+                            format!("Commented on commit {}: {comment_body}", &commit_id[..6])
+                        }
                         EventType::CreateEvent => {
-                            let ref_type = event
-                                .get_payload_data("ref_type")
-                                .unwrap()
-                                .as_str()
-                                .unwrap();
+                            let ref_type = event.get_payload_data("ref_type").as_str().unwrap();
                             if ref_type.eq("repository") {
                                 format!("New repository created: {repo_name}")
                             } else {
-                                let _ref = event.get_payload_data("ref").unwrap().as_str().unwrap();
+                                let _ref = event.get_payload_data("ref").as_str().unwrap();
                                 format!("New {ref_type} was created in {repo_name}: {_ref}")
                             }
                         }
@@ -46,8 +49,7 @@ fn main() {
                         EventType::GollumEvent => "".to_owned(),
                         EventType::IssueCommentEvent => "".to_owned(),
                         EventType::IssuesEvent => {
-                            let action =
-                                event.get_payload_data("action").unwrap().as_str().unwrap();
+                            let action = event.get_payload_data("action").as_str().unwrap();
                             let action = action
                                 .chars()
                                 .next()
@@ -64,12 +66,16 @@ fn main() {
                         EventType::PullRequestReviewCommentEvent => "".to_owned(),
                         EventType::PullRequestReviewThreadEvent => "".to_owned(),
                         EventType::PushEvent => {
-                            let commit_count = event
-                                .get_payload_data("distinct_size")
-                                .unwrap()
-                                .as_number()
-                                .unwrap();
-                            format!("Pushed {commit_count} commits to {repo_name}")
+                            let commit_count =
+                                event.get_payload_data("distinct_size").as_number().unwrap();
+                            format!(
+                                "Pushed {commit_count} commit{} to {repo_name}",
+                                if commit_count.as_u64().unwrap() == 1 {
+                                    ""
+                                } else {
+                                    "s"
+                                },
+                            )
                         }
                         EventType::ReleaseEvent => "".to_owned(),
                         EventType::SponsorshipEvent => "".to_owned(),

@@ -1,4 +1,3 @@
-
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -50,7 +49,7 @@ impl Event {
         &self._type
     }
 
-    pub fn get_payload_data(&self, key: &str) -> Option<&Value> {
-        self.payload.get(key)
+    pub fn get_payload_data(&self, key: &str) -> &Value {
+        self.payload.get(key).unwrap()
     }
 }
