@@ -1,5 +1,3 @@
-use std::env::{self, args};
-
 use reqwest::blocking::Client;
 
 use crate::event::{Event, EventType};
@@ -16,14 +14,11 @@ fn main() {
         .build()
         .unwrap();
 
-    match client.get(build_url("mwjones96")).send() {
+    match client.get(build_url("0atman")).send() {
         Ok(res) => {
             let json = res.text().unwrap();
             let events: Vec<Event> = serde_json::from_str(&json).unwrap();
             let events: Vec<Event> = events.into_iter().rev().collect();
-            if events.len() > 0 {
-                println!("Output:");
-            }
             for event in events {
                 let repo_name = event.get_repo_name();
                 let timestamp = event.get_created_at();
@@ -49,7 +44,15 @@ fn main() {
                             let _ref = event.get_payload_data("ref").as_str().unwrap();
                             format!("Deleted a {ref_type} from {repo_name}: {_ref}")
                         }
-                        EventType::ForkEvent => "".to_owned(),
+                        EventType::ForkEvent => {
+                            let forkee = event
+                                .get_payload_data("forkee")
+                                .get("full_name")
+                                .unwrap()
+                                .as_str()
+                                .unwrap();
+                            format!("Forked from repository {repo_name} to {forkee}")
+                        }
                         EventType::GollumEvent => "".to_owned(),
                         EventType::IssueCommentEvent => "".to_owned(),
                         EventType::IssuesEvent => {
