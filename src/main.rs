@@ -6,19 +6,6 @@ fn build_url(username: &str) -> String {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Payload {}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Repo {
-    name: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Actor {
-    login: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 enum EventType {
     CommitCommentEvent,
     CreateEvent,
@@ -43,9 +30,6 @@ enum EventType {
 struct Event {
     #[serde(rename = "type")]
     _type: Option<EventType>,
-    actor: Actor,
-    repo: Repo,
-    payload: Payload,
 }
 
 fn main() {
@@ -58,7 +42,30 @@ fn main() {
         Ok(res) => {
             let json = res.text().unwrap();
             let events: Vec<Event> = serde_json::from_str(&json).unwrap();
-            println!("{:?}", events);
+            for event in events {
+                match event._type {
+                    Some(_type) => match _type {
+                        EventType::CommitCommentEvent => todo!(),
+                        EventType::CreateEvent => todo!(),
+                        EventType::DeleteEvent => todo!(),
+                        EventType::ForkEvent => todo!(),
+                        EventType::GollumEvent => todo!(),
+                        EventType::IssueCommentEvent => todo!(),
+                        EventType::IssuesEvent => todo!(),
+                        EventType::MemberEvent => todo!(),
+                        EventType::PublicEvent => todo!(),
+                        EventType::PullRequestEvent => todo!(),
+                        EventType::PullRequestReviewEvent => todo!(),
+                        EventType::PullRequestReviewCommentEvent => todo!(),
+                        EventType::PullRequestReviewThreadEvent => todo!(),
+                        EventType::PushEvent => todo!(),
+                        EventType::ReleaseEvent => todo!(),
+                        EventType::SponsorshipEvent => todo!(),
+                        EventType::WatchEvent => todo!(),
+                    },
+                    None => {}
+                }
+            }
         }
         Err(err) => {
             println!("{:?}", err);
