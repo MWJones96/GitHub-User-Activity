@@ -37,6 +37,7 @@ struct Event {
     _type: Option<EventType>,
     repo: Repo,
     payload: serde_json::Value,
+    created_at: String,
 }
 
 fn main() {
@@ -45,24 +46,33 @@ fn main() {
         .build()
         .unwrap();
 
-    match client.get(build_url("kamranahmedse")).send() {
+    match client.get(build_url("mwjones96")).send() {
         Ok(res) => {
             let json = res.text().unwrap();
             let events: Vec<Event> = serde_json::from_str(&json).unwrap();
-            println!("Output:");
+            let events: Vec<Event> = events.into_iter().rev().collect();
+            if events.len() > 0 {
+                println!("Output:");
+            }
             for event in events {
-                match event._type {
+                let repo_name = event.repo.name;
+                let timestamp = event.created_at;
+                let message: String = match event._type {
                     Some(_type) => match _type {
-                        EventType::CommitCommentEvent => todo!(),
+                        EventType::CommitCommentEvent => "".to_owned(),
                         EventType::CreateEvent => {
                             let ref_type = event.payload.get("ref_type").unwrap().as_str().unwrap();
-                            let repo_name = event.repo.name;
-                            println!("{}", format!("- New {ref_type} was created in {repo_name}"));
+                            if ref_type.eq("repository") {
+                                format!("New repository created: {repo_name}")
+                            } else {
+                                let _ref = event.payload.get("ref").unwrap().as_str().unwrap();
+                                format!("New {ref_type} was created in {repo_name}: {_ref}")
+                            }
                         }
-                        EventType::DeleteEvent => todo!(),
-                        EventType::ForkEvent => todo!(),
-                        EventType::GollumEvent => todo!(),
-                        EventType::IssueCommentEvent => {}
+                        EventType::DeleteEvent => "".to_owned(),
+                        EventType::ForkEvent => "".to_owned(),
+                        EventType::GollumEvent => "".to_owned(),
+                        EventType::IssueCommentEvent => "".to_owned(),
                         EventType::IssuesEvent => {
                             let action = event.payload.get("action").unwrap().as_str().unwrap();
                             let action = action
@@ -72,29 +82,30 @@ fn main() {
                                     c.to_uppercase().collect::<String>() + &action[c.len_utf8()..]
                                 })
                                 .unwrap_or_default();
-                            let repo_name = event.repo.name;
-                            println!("{}", format!("- {action} an issue in {repo_name}"));
+                            format!("{action} an issue in {repo_name}")
                         }
-                        EventType::MemberEvent => todo!(),
-                        EventType::PublicEvent => todo!(),
-                        EventType::PullRequestEvent => {}
-                        EventType::PullRequestReviewEvent => todo!(),
-                        EventType::PullRequestReviewCommentEvent => todo!(),
-                        EventType::PullRequestReviewThreadEvent => todo!(),
+                        EventType::MemberEvent => "".to_owned(),
+                        EventType::PublicEvent => "".to_owned(),
+                        EventType::PullRequestEvent => "".to_owned(),
+                        EventType::PullRequestReviewEvent => "".to_owned(),
+                        EventType::PullRequestReviewCommentEvent => "".to_owned(),
+                        EventType::PullRequestReviewThreadEvent => "".to_owned(),
                         EventType::PushEvent => {
-                            let commit_count = event.payload.get("size").unwrap();
-                            let repo_name = event.repo.name;
-                            println!(
-                                "{}",
-                                format!("- Pushed {commit_count} commits to {repo_name}")
-                            );
+                            let commit_count = event
+                                .payload
+                                .get("distinct_size")
+                                .unwrap()
+                                .as_number()
+                                .unwrap();
+                            format!("Pushed {commit_count} commits to {repo_name}")
                         }
-                        EventType::ReleaseEvent => todo!(),
-                        EventType::SponsorshipEvent => todo!(),
-                        EventType::WatchEvent => {}
+                        EventType::ReleaseEvent => "".to_owned(),
+                        EventType::SponsorshipEvent => "".to_owned(),
+                        EventType::WatchEvent => "".to_owned(),
                     },
-                    None => {}
-                }
+                    None => "".to_owned(),
+                };
+                println!("- {timestamp}: {message}")
             }
         }
         Err(err) => {
