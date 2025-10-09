@@ -8,6 +8,15 @@ fn build_url(username: &str) -> String {
     format!("https://api.github.com/users/{username}/events")
 }
 
+fn uppercase_first_letter(action: &str) -> String {
+    let action = action
+        .chars()
+        .next()
+        .map(|c| c.to_uppercase().collect::<String>() + &action[c.len_utf8()..])
+        .unwrap_or_default();
+    action
+}
+
 fn main() {
     let client = Client::builder()
         .user_agent("RustClient/1.0")
@@ -53,17 +62,20 @@ fn main() {
                                 .unwrap();
                             format!("Forked from repository {repo_name} to {forkee}")
                         }
-                        EventType::GollumEvent => "".to_owned(),
+                        EventType::GollumEvent => {
+                            let action = uppercase_first_letter(
+                                event.get_payload_data("pages[][action]").as_str().unwrap(),
+                            );
+                            let page_name = event
+                                .get_payload_data("pages[][page_name]")
+                                .as_str()
+                                .unwrap();
+                            format!("{action} wiki page {page_name}")
+                        }
                         EventType::IssueCommentEvent => "".to_owned(),
                         EventType::IssuesEvent => {
                             let action = event.get_payload_data("action").as_str().unwrap();
-                            let action = action
-                                .chars()
-                                .next()
-                                .map(|c| {
-                                    c.to_uppercase().collect::<String>() + &action[c.len_utf8()..]
-                                })
-                                .unwrap_or_default();
+                            let action = uppercase_first_letter(action);
                             format!("{action} an issue in {repo_name}")
                         }
                         EventType::MemberEvent => "".to_owned(),
