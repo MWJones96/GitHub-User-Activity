@@ -44,7 +44,11 @@ fn main() {
                                 format!("New {ref_type} was created in {repo_name}: {_ref}")
                             }
                         }
-                        EventType::DeleteEvent => "".to_owned(),
+                        EventType::DeleteEvent => {
+                            let ref_type = event.get_payload_data("ref_type").as_str().unwrap();
+                            let _ref = event.get_payload_data("ref").as_str().unwrap();
+                            format!("Deleted a {ref_type} from {repo_name}: {_ref}")
+                        }
                         EventType::ForkEvent => "".to_owned(),
                         EventType::GollumEvent => "".to_owned(),
                         EventType::IssueCommentEvent => "".to_owned(),
