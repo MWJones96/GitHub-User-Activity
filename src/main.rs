@@ -76,14 +76,26 @@ fn main() {
                             );
                             let issue = event.get_payload_data("issue");
                             let comment = event.get_payload_data("comment").get("body").unwrap();
-                            format!("{action} a comment on issue {issue}: {comment}")
+                            format!("{action} a comment on issue {issue} in repo {repo_name}: {comment}")
                         }
                         EventType::IssuesEvent => {
                             let action = event.get_payload_data("action").as_str().unwrap();
                             let action = uppercase_first_letter(action);
                             format!("{action} an issue in {repo_name}")
                         }
-                        EventType::MemberEvent => "".to_owned(),
+                        EventType::MemberEvent => {
+                            let action = event.get_payload_data("action").as_str().unwrap();
+                            let member = event
+                                .get_payload_data("member")
+                                .as_object()
+                                .unwrap()
+                                .get("login")
+                                .unwrap()
+                                .as_str()
+                                .unwrap();
+
+                            format!("Repository {repo_name}: {action} {member}")
+                        }
                         EventType::PublicEvent => "".to_owned(),
                         EventType::PullRequestEvent => "".to_owned(),
                         EventType::PullRequestReviewEvent => "".to_owned(),
