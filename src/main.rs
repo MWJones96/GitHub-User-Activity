@@ -63,16 +63,24 @@ fn main() {
                             format!("Forked from repository {repo_name} to {forkee}")
                         }
                         EventType::GollumEvent => {
-                            let action = uppercase_first_letter(
-                                event.get_payload_data("pages[][action]").as_str().unwrap(),
-                            );
-                            let page_name = event
-                                .get_payload_data("pages[][page_name]")
-                                .as_str()
-                                .unwrap();
-                            format!("{action} wiki page {page_name}")
+                            let page_count =
+                                event.get_payload_data("pages").as_array().unwrap().len();
+                            format!(
+                                "Created/updated {page_count} wiki page{}",
+                                if page_count > 1 { "s" } else { "" }
+                            )
                         }
-                        EventType::IssueCommentEvent => "".to_owned(),
+                        EventType::IssueCommentEvent => {
+                            /*
+                            let action = uppercase_first_letter(
+                                event.get_payload_data("action").as_str().unwrap(),
+                            );
+                            let issue = event.get_payload_data("issue");
+                            let comment = event.get_payload_data("comment");
+                            format!("{action} a comment on issue {issue}: {comment}")
+                            */
+                            format!("")
+                        }
                         EventType::IssuesEvent => {
                             let action = event.get_payload_data("action").as_str().unwrap();
                             let action = uppercase_first_letter(action);
