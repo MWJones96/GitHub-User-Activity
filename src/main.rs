@@ -71,15 +71,12 @@ fn main() {
                             )
                         }
                         EventType::IssueCommentEvent => {
-                            /*
                             let action = uppercase_first_letter(
                                 event.get_payload_data("action").as_str().unwrap(),
                             );
                             let issue = event.get_payload_data("issue");
-                            let comment = event.get_payload_data("comment");
+                            let comment = event.get_payload_data("comment").get("body").unwrap();
                             format!("{action} a comment on issue {issue}: {comment}")
-                            */
-                            format!("")
                         }
                         EventType::IssuesEvent => {
                             let action = event.get_payload_data("action").as_str().unwrap();
