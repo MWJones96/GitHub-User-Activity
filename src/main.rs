@@ -96,7 +96,9 @@ fn main() {
 
                             format!("Repository {repo_name}: {action} {member}")
                         }
-                        EventType::PublicEvent => "".to_owned(),
+                        EventType::PublicEvent => {
+                            format!("Repository {repo_name} made public")
+                        }
                         EventType::PullRequestEvent => "".to_owned(),
                         EventType::PullRequestReviewEvent => "".to_owned(),
                         EventType::PullRequestReviewCommentEvent => "".to_owned(),
